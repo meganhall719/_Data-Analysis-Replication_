@@ -1,0 +1,325 @@
+---
+title: "Maternal Seperation"
+format: html
+editor: visual
+---
+
+### [Title]{.underline}: Maternal behavior promotes resilience to adolescent stress in mice through a microglia-neuron axis
+
+### [Introduction]{.underline}
+
+Mitochondrial dysfunction is considered a potential risk factor for major depressive disorder in both adults and adolescents. Research indicates that adult mice vulnerable to chronic social defeat stress (CSDS) exhibit increased mitochondrial fission, leading to abnormal mitochondria and reduced ATP production. However, there is limited understanding of how adolescent stress susceptibility is linked to mitochondrial dysfunction. In this study, the authors explored the mechanisms underlying adolescent depression in mice using the accelerated social defeat stress (AsSD) model. They identified two groups of mice: those **susceptible (Sus)** to depressive-like behavior after exposure to the AsSD model, and **resilient (Res)** mice, who were able to resist depressive-like behavior after undergoing the AsSD model. These researchers assessed mitochondrial function in these wild-type mice after exposure to AsSD and compared them to **control** (**Con**) mice that did not undergo the AsSD paradigm. The results revealed a significant decrease in ATP levels in the medial prefrontal cortex (mPFC) of both male and female susceptible mice, while no such decrease was observed in the hippocampus. These findings suggest that stress leads to mitochondrial dysfunction in the mPFC of adolescent depression-like mice, with no observed differences between sexes (Figure 1J).
+
+#### Graphic representation of mitochondrial membrane potential (MMP) and ATP levels in the mPFC and the hippocampus of adolescent mice.
+
+#### Image of Graphic In this Data Analysis Replication Assignment I am focusing on ATP levels in the mPFC and hippocampus
+
+```{r}
+library(knitr)
+#| out-width: "##%"
+knitr::include_graphics("Images/Fig1Hschematic.png")
+
+```
+
+## Measuring ATP Levels in mPFC and Hippocampus after AsSD
+
+### Figure 1 j. ( mPFC)
+
+#### step 1 loading in data
+
+```{r}
+
+library(dplyr)    
+library(ggplot2)  
+library(car)      
+library(emmeans)
+library(tidyr)    
+library(readr)    
+
+# Load data
+f <- "https://raw.githubusercontent.com/meganhall719/_Data-Analysis-Replication_/refs/heads/main/Data/Fig1j-mPFC.csv"
+m <- read_csv(f, col_names = TRUE)
+head(m)
+```
+
+#### Descriptive statistics
+
+this paper did not interpret or talk about descriptive statistics much so I ran some using the skimr function
+
+```{r}
+library(skimr)
+
+# Get descriptive statistics on the raw data
+skim(m)
+
+```
+
+The data shows clear differences between the three experimental groups. The Control (Con) group had the highest average ATP levels (100.00 nmol/μg protein) with a lot of variability (SD=21.24). The Susceptible (Sus) group had much lower ATP levels (mean = 45.70), less than half of the Control group, and lower variability (SD=14.33). The Resilient (Res) group had intermediate ATP levels (mean = 91.49), closer to the Control group than to the Susceptible group, with moderate variability (SD=18.24).
+
+The median values (p50) suggest the Control and Resilient groups have slightly left-skewed distributions (medians higher than means), while the Susceptible group data is more symmetrical. The range of values shows some overlap between the Control and Resilient groups, but the Susceptible group’s highest value (65.51) is much lower than the Control group’s median (82.52).
+
+These findings suggest potential biological differences in ATP levels between the groups, supporting further analysis with statistical tests like ANOVA and Bonferroni correction. Like what was done in the paper \### inferential statistics
+
+#### Running an ANOVA and doing a Bonferroni Correction; we are doing a Bonferroni Correction because that is the kind of inferential statistic that this paper did presumeably to control for type 1 errors in hypothesis testing.
+
+```{r}
+# Step 1: Extract group values 
+groups <- list(
+  Con = m$Con,
+  Sus = m$Sus,
+  Res = m$Res
+)
+
+# Step 2: Prepare data for ANOVA while choosing the order that appeared in the paper
+anova_data <- data.frame(
+  values = c(groups$Con, groups$Sus, groups$Res),
+  group = factor(rep(c("Con", "Sus", "Res"), each = length(groups$Con)),
+                levels = c("Con", "Sus", "Res"))  # Setting the explicit order
+)
+```
+
+```{r}
+# Step 3: Run one-way ANOVA
+anova_result <- aov(values ~ group, data = anova_data)
+summary(anova_result)
+```
+
+The F Value = 15.53 matched the F value in the raw data given by researchers of this paper
+
+```{r}
+# Step 4: Run Bonferroni-corrected post-hoc tests
+# Using pairwise t-tests with Bonferroni adjustment
+posthoc <- pairwise.t.test(anova_data$values, anova_data$group, 
+                          p.adjust.method = "bonferroni")
+print(posthoc)
+```
+
+```{r}
+library(emmeans)
+# Alternative using emmeans (more flexibility)
+emm <- emmeans(anova_result, "group")
+pairs_result <- pairs(emm, adjust = "bonferroni")
+print(pairs_result)
+```
+
+#### These P-values most closely resemble thee ones found in the paper.
+
+there are no significant difference between the control group and resilient group, which makes since. One key hypothesis is that the resilient group has. compensatory means of homeostatic regulation to control for depressive like behavior; one mechanism would be their mitochondria function would remain relatively normal after receiving the AcSD stress paradigm. There is a significant difference between control and susceptible (p = 0.0003) and Resilient and Susceptible (0.0017) This supports the hypothesis that mitochondria dysfunction/dysregulation is observed in adolescent mice that have depressive like behavior. This is specific to the mPFC which we know is an important region affected by major depressive disorder.
+
+```{r}
+library(dplyr)
+# Step 5: Calculate summary statistics 
+summary_stats <- anova_data %>%
+  group_by(group) %>%
+  summarise(
+    mean = mean(values),
+    sd = sd(values),
+    se = sd / sqrt(n()),
+    n = n(),
+    .groups = "drop"  
+  )
+
+# Check the calculated statistics
+print(summary_stats)
+```
+
+```{r}
+library(ggplot2)
+# Step 6: Create the plot with ordered groups
+p <- ggplot() +
+  # Add bars
+  geom_bar(data = summary_stats, 
+           aes(x = group, y = mean, fill = group),
+           stat = "identity", width = 0.7, color = "black") +
+  # Add error bars
+  geom_errorbar(data = summary_stats,
+                aes(x = group, ymin = mean - se, ymax = mean + se),
+                width = 0.2) +
+  # Add individual data points
+  geom_point(data = anova_data,
+             aes(x = group, y = values),
+             position = position_jitter(width = 0.2),
+             shape = 1, size = 2) +
+  # Color scheme
+  scale_fill_manual(values = c("Con" = "white", "Sus" = "lightpink", "Res" = "lightblue")) +
+  # Labels
+  labs(
+    title = "mPFC",
+    y = "Mitochondrial ATP\n(nmol/μg protein, %)",
+    x = NULL
+  ) +
+  # Theme settings
+  theme_classic() +
+  theme(
+    legend.position = "none",
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14)
+  )
+
+# Step 7: Add p-value annotations
+
+y_max <- max(summary_stats$mean) * 1.3  # Set a base height for annotations
+
+p + 
+  # Add p-value annotations 
+  annotate("text", x = 1.5, y = y_max, label = "p = 0.0003") +
+  annotate("text", x = 2.5, y = y_max * 0.9, label = "p = 0.0017") +
+  
+  # Add brackets
+  annotate("segment", x = 1, xend = 2, y = y_max * 0.95, yend = y_max * 0.95) +
+  annotate("segment", x = 2, xend = 3, y = y_max * 0.85, yend = y_max * 0.85) 
+
+
+```
+
+### Figure from paper
+
+##### In the paper the bar graphs have the following colors and corresponding labels
+
+-   Control (Con) is in white
+
+-   Susceptible(Sus) is in light pink/red
+
+-   Resilient (Res) is in Blue
+
+```{r}
+library(knitr)
+#| out-width: "##%"
+knitr::include_graphics("Images/Fig1J.mPFC.png")
+```
+
+## Figure 1 j. (Hippocampus)
+
+### Loading in data set
+
+```{r}
+library(tidyverse)
+library(dplyr)
+
+f<- "https://raw.githubusercontent.com/meganhall719/_Data-Analysis-Replication_/refs/heads/main/Data/Fig1j-Hippocampus.csv"
+h<-read_csv(f, col_names = TRUE)
+
+head(h)
+```
+
+### Descriptive statistics
+
+```{r}
+library(skimr)
+
+# Get descriptive statistics on the raw data
+skim(h)
+```
+
+The Resilient (Res) group shows the highest mean ATP levels at 118.37 nmol/μg protein with moderate variability (SD=29.46). This suggests that resilient subjects maintain robust mitochondrial function in the hippocampus.The Control (Con) group has an intermediate mean value of 100.00 nmol/μg protein but shows higher variability (SD=44.32) than the other groups. This wide spread (from 46.39 to 179.98 nmol/μg protein) indicates considerable biological variation even among control subjects.The Susceptible (Sus) group demonstrates the lowest mean ATP levels at 71.56 nmol/μg protein with high variability (SD=36.22). The range extends from 23.40 to 123.71 nmol/μg protein, showing some overlap with the Control group but generally lower values. The median values (p50) for all three groups are slightly lower than their respective means, suggesting a slight positive skew in the distributions (with some higher values pulling the means up).The noticeable difference between the Resilient and Susceptible groups (difference of approximately 46.8 nmol/μg protein between means) suggests a potential biological mechanism where stress resilience may be associated with preserved or enhanced mitochondrial function in the hippocampus, an area critical for stress response regulation.
+
+#### Running an ANOVA and doing a Bonferroni Correction; we are doing a Bonferroni Correction because that is the kind of inferential statistic that this paper did presumably to control for type 1 errors in hypothesis testing.
+
+```{r}
+
+
+library(dplyr)    
+library(ggplot2)
+library(car)    
+library(emmeans)  
+
+# Step 1: Create a list from the hippocampus data
+Hipp_group <- list(
+  Con = h$Con,
+  Sus = h$Sus,
+  Res = h$Res
+)
+
+# Step 2: Convert the list to a data frame for analysis with the correct order
+anova_data <- data.frame(
+  values = c(Hipp_group$Con, Hipp_group$Sus, Hipp_group$Res),
+  group = factor(rep(c("Con", "Sus", "Res"), 
+                     each = length(Hipp_group$Con)),
+                 levels = c("Con", "Sus", "Res"))
+)
+
+# Step 3: Run the one-way ANOVA
+anova_resultHipp <- aov(values ~ group, data = anova_data)
+summary(anova_resultHipp)
+
+# Step 4: Calculate summary statistics for plotting
+summary_stats <- anova_data %>%
+  group_by(group) %>%
+  summarise(
+    mean = mean(values),
+    sd = sd(values),
+    se = sd / sqrt(n()),
+    n = n(),
+    .groups = "drop"
+  )
+
+```
+
+The F value is 2.416 which matches the F value in the raw data given by researchers of this paper
+
+```{r}
+# Step 5: Perform Bonferroni-corrected pairwise comparisons
+# Using the emmeans package for post-hoc tests
+
+posthocHipp <- emmeans(anova_resultHipp, "group")
+pairs_resultHipp <- pairs(posthocHipp, adjust = "bonferroni")
+print(pairs_resultHipp)
+```
+
+The p-values obtained from our analysis align with those reported in the paper. For the comparison between Control and Susceptible groups, the p-value was 0.6146, indicating no statistically significant difference. The comparison between Control and Resilient groups yielded a p-value of 1.0, which suggests a very non-significant result. The p-value for Susceptible vs. Resilient groups was 0.1364, which is also not statistically significant. These findings suggest that the effects of depression on mitochondrial function, specifically ATP production, do not differ significantly in the hippocampus. However, these effects are significantly different in the mPFC.
+
+```{r}
+# Step 5: Create the plot with the correct order
+ggplot() +
+  # Add bars for group means
+  geom_bar(data = summary_stats, 
+           aes(x = group, y = mean, fill = group),
+           stat = "identity", width = 0.7, color = "black") +
+  # Add error bars
+  geom_errorbar(data = summary_stats,
+                aes(x = group, ymin = mean - se, ymax = mean + se),
+                width = 0.2) +
+  # Add individual data points
+  geom_point(data = anova_data,
+             aes(x = group, y = values),
+             position = position_jitter(width = 0.2),
+             shape = 1, size = 2) +
+  # Customize colors
+  scale_fill_manual(values = c("Con" = "white", "Sus" = "lightpink", "Res" = "lightblue")) +
+  # Labels and theme
+  labs(
+    title = "Hippocampus",
+    y = "Mitochondrial ATP\n(nmol/μg protein, %)",
+    x = NULL
+  ) +
+  theme_classic() +
+  theme(
+    legend.position = "none",
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14)
+  ) +
+  # Add p-value annotations based on your Bonferroni test results
+  annotate("text", x = 1.5, y = 190, label = "p = 0.6146") +
+  annotate("text", x = 2.5, y = 170, label = "p = 0.1364") +
+  annotate("text", x = 2, y = 210, label = "p > 0.9999") +
+  annotate("segment", x = 1, xend = 2, y = 180, yend = 180) +
+  annotate("segment", x = 2, xend = 3, y = 160, yend = 160) +
+  annotate("segment", x = 1, xend = 3, y = 200, yend = 200)
+```
+
+### Figure from paper
+
+-   Control (Con) is in white
+
+-   Susceptible(Sus) is in light pink/red
+
+-   Resilient (Res) is in Blue
+
+```{r}
+library(knitr)
+knitr::include_graphics("Images/FigJ.Hippocampus.png")
+```
+
+## [Discussion/Reflection]{.underline}
+
+In my opinion the replication of the analysis was successful, but only after encountering significant challenges in finding a suitably transparent paper. The results I replicated from my final selected paper closely matched those presented in the original publication, with figures and statistical outcomes that I was able to reproduce accurately. This success was largely due to the exceptional transparency provided by the authors of the paper I chose. However, several significant challenges arose during the process. Initially, I attempted to work with three different papers that seemed to have sufficient data for replication. Unfortunately, I soon discovered that these papers had substantial omissions, making replication impossible, despite their publication in high-impact journals. One major issue was the lack of clear and complete documentation in these studies. Critical metadata, such as the sex of the experimental animals, was either omitted or very difficult to find, making it hard to ensure the analyses were fully aligned with the original methodology. Additionally, in some papers, there were discrepancies between the data presented in the figures and the full dataset. This suggested that certain samples may have been selectively omitted from visual representations without clear explanation, further complicating the replication effort. Finally, for several of the papers, it was challenging to determine which data corresponded to which figures, making it even more difficult to replicate the analysis.Any differneces in my data to this I have a few thoughts. I noticed that the individual data points in my visuals (bar graphs) appeared slightly different from those in the original paper. I attribute this discrepancy to several factors, such as differences in graph formatting. The graphs in the original paper were narrower, whereas mine were wider. Additionally, variations in statistical software could have contributed to the differences. The original paper specified that they used GraphPad Prism 9.0 for their statistical analysis, and I used R studio. Different statistical packages can implement statistical tests with slight variations in algorithms or default parameters. All in all I learned alot from this assignment most importantly the importance of data transparency in the reproducibility of scientific results
