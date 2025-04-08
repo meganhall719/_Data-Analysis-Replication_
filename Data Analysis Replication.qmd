@@ -8,11 +8,11 @@ editor: visual
 
 ### [Introduction]{.underline}
 
-Mitochondrial dysfunction is considered a potential risk factor for major depressive disorder in both adults and adolescents. Research indicates that adult mice vulnerable to chronic social defeat stress (CSDS) exhibit increased mitochondrial fission, leading to abnormal mitochondria and reduced ATP production. However, there is limited understanding of how adolescent stress susceptibility is linked to mitochondrial dysfunction. In this study, the authors explored the mechanisms underlying adolescent depression in mice using the accelerated social defeat stress (AsSD) model. They identified two groups of mice: those **susceptible (Sus)** to depressive-like behavior after exposure to the AsSD model, and **resilient (Res)** mice, who were able to resist depressive-like behavior after undergoing the AsSD model. These researchers assessed mitochondrial function in these wild-type mice after exposure to AsSD and compared them to **control** (**Con**) mice that did not undergo the AsSD paradigm. The results revealed a significant decrease in ATP levels in the medial prefrontal cortex (mPFC) of both male and female susceptible mice, while no such decrease was observed in the hippocampus. These findings suggest that stress leads to mitochondrial dysfunction in the mPFC of adolescent depression-like mice, with no observed differences between sexes (Figure 1J).
+Mitochondrial dysfunction is considered a potential risk factor for major depressive disorder in both adults and adolescents. Research indicates that adult mice vulnerable to chronic social defeat stress (CSDS) exhibit increased mitochondrial fission, leading to abnormal mitochondria and reduced ATP production. However, there is limited understanding of how adolescent stress susceptibility is linked to mitochondrial dysfunction. In this study, the authors explored the mechanisms underlying adolescent depression in mice using the accelerated social defeat stress (AsSD) model. They identified two groups of mice: those **susceptible (Sus)** to depressive-like behavior after exposure to the AsSD model, and **resilient (Res)** mice, who were able to resist depressive-like behavior after undergoing the AsSD model. These researchers assessed mitochondrial function in these wild-type mice after exposure to AsSD and compared them to **control** (**Con**) mice that did not undergo the AsSD paradigm. The results revealed a significant decrease in ATP levels in the medial prefrontal cortex (mPFC) of both male and female susceptible mice, while no such decrease was observed in the hippocampus. These findings suggest that stress leads to mitochondrial dysfunction in the mPFC of adolescent depression-like mice, with no observed differences between sexes. This group's statistical analysis for comparing three or more groups used a one-way ANOVA, followed by Bonferroni’s multiple comparison test. This is the method I will be replicating specifically for replicating Figure 1j.
 
 #### Graphic representation of mitochondrial membrane potential (MMP) and ATP levels in the mPFC and the hippocampus of adolescent mice.
 
-#### Image of Graphic In this Data Analysis Replication Assignment I am focusing on ATP levels in the mPFC and hippocampus
+########## Image of Graphic In this Data Analysis Replication Assignment I am focusing on ATP levels in the mPFC and hippocampus
 
 ```{r}
 library(knitr)
@@ -58,7 +58,9 @@ The data shows clear differences between the three experimental groups. The Cont
 
 The median values (p50) suggest the Control and Resilient groups have slightly left-skewed distributions (medians higher than means), while the Susceptible group data is more symmetrical. The range of values shows some overlap between the Control and Resilient groups, but the Susceptible group’s highest value (65.51) is much lower than the Control group’s median (82.52).
 
-These findings suggest potential biological differences in ATP levels between the groups, supporting further analysis with statistical tests like ANOVA and Bonferroni correction. Like what was done in the paper \### inferential statistics
+These findings suggest potential biological differences in ATP levels between the groups, supporting further analysis with statistical tests like ANOVA and Bonferroni correction. Like what was done in the paper
+
+### inferential statistics
 
 #### Running an ANOVA and doing a Bonferroni Correction; we are doing a Bonferroni Correction because that is the kind of inferential statistic that this paper did presumeably to control for type 1 errors in hypothesis testing.
 
@@ -102,7 +104,7 @@ pairs_result <- pairs(emm, adjust = "bonferroni")
 print(pairs_result)
 ```
 
-#### These P-values most closely resemble thee ones found in the paper.
+#### These P-values most closely resemble the ones found in the paper.
 
 there are no significant difference between the control group and resilient group, which makes since. One key hypothesis is that the resilient group has. compensatory means of homeostatic regulation to control for depressive like behavior; one mechanism would be their mitochondria function would remain relatively normal after receiving the AcSD stress paradigm. There is a significant difference between control and susceptible (p = 0.0003) and Resilient and Susceptible (0.0017) This supports the hypothesis that mitochondria dysfunction/dysregulation is observed in adolescent mice that have depressive like behavior. This is specific to the mPFC which we know is an important region affected by major depressive disorder.
 
@@ -125,7 +127,7 @@ print(summary_stats)
 
 ```{r}
 library(ggplot2)
-# Step 6: Create the plot with ordered groups
+# Step 6: Create the plot 
 p <- ggplot() +
   # Add bars
   geom_bar(data = summary_stats, 
@@ -269,7 +271,7 @@ print(pairs_resultHipp)
 The p-values obtained from our analysis align with those reported in the paper. For the comparison between Control and Susceptible groups, the p-value was 0.6146, indicating no statistically significant difference. The comparison between Control and Resilient groups yielded a p-value of 1.0, which suggests a very non-significant result. The p-value for Susceptible vs. Resilient groups was 0.1364, which is also not statistically significant. These findings suggest that the effects of depression on mitochondrial function, specifically ATP production, do not differ significantly in the hippocampus. However, these effects are significantly different in the mPFC.
 
 ```{r}
-# Step 5: Create the plot with the correct order
+# Step 6: Create a plot 
 ggplot() +
   # Add bars for group means
   geom_bar(data = summary_stats, 
@@ -322,4 +324,4 @@ knitr::include_graphics("Images/FigJ.Hippocampus.png")
 
 ## [Discussion/Reflection]{.underline}
 
-In my opinion the replication of the analysis was successful, but only after encountering significant challenges in finding a suitably transparent paper. The results I replicated from my final selected paper closely matched those presented in the original publication, with figures and statistical outcomes that I was able to reproduce accurately. This success was largely due to the exceptional transparency provided by the authors of the paper I chose. However, several significant challenges arose during the process. Initially, I attempted to work with three different papers that seemed to have sufficient data for replication. Unfortunately, I soon discovered that these papers had substantial omissions, making replication impossible, despite their publication in high-impact journals. One major issue was the lack of clear and complete documentation in these studies. Critical metadata, such as the sex of the experimental animals, was either omitted or very difficult to find, making it hard to ensure the analyses were fully aligned with the original methodology. Additionally, in some papers, there were discrepancies between the data presented in the figures and the full dataset. This suggested that certain samples may have been selectively omitted from visual representations without clear explanation, further complicating the replication effort. Finally, for several of the papers, it was challenging to determine which data corresponded to which figures, making it even more difficult to replicate the analysis.Any differneces in my data to this I have a few thoughts. I noticed that the individual data points in my visuals (bar graphs) appeared slightly different from those in the original paper. I attribute this discrepancy to several factors, such as differences in graph formatting. The graphs in the original paper were narrower, whereas mine were wider. Additionally, variations in statistical software could have contributed to the differences. The original paper specified that they used GraphPad Prism 9.0 for their statistical analysis, and I used R studio. Different statistical packages can implement statistical tests with slight variations in algorithms or default parameters. All in all I learned alot from this assignment most importantly the importance of data transparency in the reproducibility of scientific results
+In my opinion the replication of the analysis was successful, but only after encountering significant challenges in finding a suitably transparent paper. The results I replicated from my final selected paper closely matched those presented in the original publication, with figures and statistical outcomes that I was able to reproduce accurately. This success was largely due to the exceptional transparency provided by the authors of the paper I chose. However, several significant challenges arose during the process. Initially, I attempted to work with three different papers that seemed to have sufficient data for replication. Unfortunately, I soon discovered that these papers had substantial omissions, making replication impossible, despite their publication in high-impact journals. One major issue was the lack of clear and complete documentation in these studies. Critical metadata, such as the sex of the experimental animals, was either omitted or very difficult to find, making it hard to ensure the analyses were fully aligned with the original methodology. Additionally, in some papers, there were discrepancies between the data presented in the figures and the full dataset. This suggested that certain samples may have been selectively omitted from visual representations without clear explanation, further complicating the replication effort. Finally, for several of the papers, it was challenging to determine which data corresponded to which figures, making it even more difficult to replicate the analysis.Any differences in my data to this I have a few thoughts. I noticed that the individual data points in my visuals (bar graphs) appeared slightly different from those in the original paper. I attribute this discrepancy to several factors, such as differences in graph formatting. The graphs in the original paper were narrower, whereas mine were wider. Additionally, variations in statistical software could have contributed to the differences. The original paper specified that they used GraphPad Prism 9.0 for their statistical analysis, and I used R studio. Different statistical packages can implement statistical tests with slight variations in algorithms or default parameters. All in all I learned a lot from this assignment most importantly the importance of data transparency in the reproducibility of scientific results
